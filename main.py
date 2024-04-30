@@ -6,11 +6,10 @@ import customtkinter as ctk
 
 
 def convert_currency(*args, **kwargs):
-    source_currency = str(choice1.get().upper().strip())
-    target_currency = str(choice2.get().upper().strip())
-    amount = float(input(amount_entry.get()))
+    source_currency = choice1.get().upper().strip()
+    target_currency = choice2.get().upper().strip()
+    amount = int(amount_entry.get())
     URL = f"https://api.frankfurter.app/latest?amount={amount}&from={source_currency}&to={target_currency}"
-    print(args, kwargs)
 
     try:
         response = requests.get(URL)
@@ -26,7 +25,7 @@ def convert_currency(*args, **kwargs):
 
 root = ctk.CTk()
 root.title('Currency Converter')
-root.geometry = ('800x600')
+root.geometry = ('500x400')
 
 source_label = ctk.CTkLabel(root, text='Что перевести')
 source_label.pack()
