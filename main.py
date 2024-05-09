@@ -15,42 +15,62 @@ class CurrencyConversion(Base):
     source_currency = Column(String)
     target_currency = Column(String)
     amount = Column(Integer)
-    result = Column(String)
 
 engine = create_engine('sqlite:///currency_converter.db')
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
 
-def convert_currency(*args, **kwargs):
-    source_currency = choice1.get().upper().strip()
-    target_currency = choice2.get().upper().strip()
-    amount = int(amount_entry.get())
-    URL = f"https://api.frankfurter.app/latest?amount={amount}&from={source_currency}&to={target_currency}"
-
+def convert(from_, to, amount):
+    URL = f"https://api.frankfurter.app/latest?amount={amount}&from={from_}&to={to}"
     try:
         response = requests.get(URL)
         if response.status_code == 200:
             data = response.json()
-            result_text = f"{amount} {source_currency} это {data['rates'][target_currency]} {target_currency}"
-            result_label.configure(text=result_text)
-
+            result = data['rates'][to]
+            single_value = result / amount
             session = Session()
+            conversion = session.query(CurrencyConversion).filter(
+                CurrencyConversion.source_currency == from_,
+                CurrencyConversion.target_currency == to
+            ).all()
+            if conversion:
+                session.delete(conversion[0])
             conversion = CurrencyConversion(
-                source_currency=source_currency,
-                target_currency=target_currency,
-                amount=amount,
-                result=result_text
+                source_currency=from_,
+                target_currency=to,
+                amount=single_value,
             )
             session.add(conversion)
             session.commit()
             session.close()
-
-        else:
-            result_label.configure(text=f'Не получилось получить данные, ошибка: {response.status_code}')
+            return result
     except requests.exceptions.RequestException as e:
+        session = Session()
+        conversion = session.query(CurrencyConversion).filter(
+            CurrencyConversion.source_currency == from_,
+            CurrencyConversion.target_currency == to
+        ).all()
+        if conversion:
+            result = conversion[0].amount * amount
+        else:
+            result = 'Ошибка'
+        session.close()
+        return result
 
-        result_label.configure(text=f'Произошла ошибка')
+
+def convert_currency(*args, **kwargs):
+    source_currency = choice1.get().upper().strip()
+    target_currency = choice2.get().upper().strip()
+    amount = int(amount_entry.get())
+    
+    result = convert(source_currency, target_currency, amount)
+    if result == 'Ошибка':
+        result_text = 'Ошибка'
+    else:
+        result_text = f"{amount} {source_currency} это {result} {target_currency}"
+    result_label.configure(text=result_text)
+  
 
 root = ctk.CTk()
 root.title('Currency Converter')
