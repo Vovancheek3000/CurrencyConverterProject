@@ -72,6 +72,7 @@ def convert_currency(*args, **kwargs):
     result_label.configure(text=result_text)
   
 
+
 root = ctk.CTk()
 root.title('Currency Converter')
 root.geometry = ('500x400')
@@ -83,6 +84,7 @@ choice1.pack()
 
 target_label = ctk.CTkLabel(root, text='Во что перевести')
 target_label.pack()
+
 choice2 = ctk.CTkComboBox(master=root, values=['AUD', 'BGN', 'BRL', 'CAD', 'CNY', 'MXN', 'EUR', 'USD', 'INR', 'JPY', 'TRY'])
 choice2.pack()
 
